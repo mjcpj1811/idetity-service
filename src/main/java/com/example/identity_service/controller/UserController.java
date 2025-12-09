@@ -7,35 +7,44 @@ import com.example.identity_service.dto.response.UserResponse;
 import com.example.identity_service.entity.User;
 import com.example.identity_service.service.UserService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@Slf4j
 @RequestMapping("/users")
 public class UserController {
     @Autowired
     private UserService userService;
 
     @PostMapping
-    ApiResponse<User> createUser(@RequestBody @Valid UserCreationRequest request){
-        ApiResponse<User> apiResponse = new ApiResponse<>();
-        apiResponse.setResult(userService.createUser(request));
-        return apiResponse;
+    ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request){
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.createUser(request))
+                .build();
+
     }
 
     @GetMapping
-    ApiResponse<List<User>> getUsers(){
-        ApiResponse<List<User>> apiResponse = new ApiResponse<>();
-        apiResponse.setResult(userService.getUsers());
-        return apiResponse;
+    ApiResponse<List<UserResponse>> getUsers(){
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Authenticated user: " + authentication.getName());
+        authentication.getAuthorities().forEach(role -> log.info("Role: " + role.getAuthority()));
+        return ApiResponse.<List<UserResponse>>builder()
+                .result(userService.getUsers())
+                .build();
     }
 
     @GetMapping("/{userId}")
     UserResponse getUser(@PathVariable String userId){
         return userService.getUser(userId);
     }
+
 
     @PutMapping("/{userId}")
     UserResponse updateUser(@PathVariable String userId, @RequestBody @Valid UserUpdateRequest request){
