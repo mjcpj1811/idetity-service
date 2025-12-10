@@ -42,12 +42,9 @@ public class AuthenticationService {
         var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXIST));
         PasswordEncoder encoder = new BCryptPasswordEncoder(10);
-
         boolean authenticated =  encoder.matches(request.getPassword(), user.getPassword());
-
         if(!authenticated)
             throw new AppException(ErrorCode.UNAUTHENTICATED_ACCESS);
-
         var token = generateToken(user);
         return AuthenticationResponse.builder()
                 .token(token)
@@ -58,13 +55,10 @@ public class AuthenticationService {
     public IntrospectResponse introspect(IntrospectRequest request)
             throws JOSEException, ParseException {
         var token = request.getToken();
-
         JWSVerifier verifier = new MACVerifier(key.getBytes());
         SignedJWT signedJWT = SignedJWT.parse(token);
-
         Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
         var verified = signedJWT.verify(verifier);
-
         return IntrospectResponse.builder()
                 .valid(verified && expirationTime.after(new Date()))
                 .build();
@@ -95,8 +89,8 @@ public class AuthenticationService {
     }
     private String buildScope(User user) {
         StringJoiner stringJoiner = new StringJoiner(" ");
-        if(!CollectionUtils.isEmpty(user.getRoles()))
-            user.getRoles().forEach(stringJoiner::add);
+//        if(!CollectionUtils.isEmpty(user.getRoles()))
+//            user.getRoles().forEach(stringJoiner::add);
         return stringJoiner.toString();
     }
 }

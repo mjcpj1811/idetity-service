@@ -36,11 +36,9 @@ public class UserService {
         }
         User user=userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-        HashSet<String> roles = new HashSet<>();
-        roles.add(Role.USER.name());
-        user.setRoles(roles);
-
+//       HashSet<String> roles = new HashSet<>();
+//        roles.add(Role.USER.name());
+//       user.setRoles(roles);
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
@@ -49,30 +47,30 @@ public class UserService {
         return userMapper.toUserResponse(userRepository.findAll());
     }
 
-    @PostAuthorize("returnObject.username == authentication.name")
+
     public UserResponse getUser(String id){
         return userMapper.toUserResponse(userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
     }
 
+    @PostAuthorize("returnObject.username == authentication.name")
     public UserResponse getMyInfo() {
         var context = SecurityContextHolder.getContext();
         String name = context.getAuthentication().getName();
-
         User user = userRepository.findByUsername(name).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXIST));
-
         return userMapper.toUserResponse(user);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public UserResponse updateUser(String userId, UserUpdateRequest request){
          User user = userRepository.findById(userId)
                  .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         userMapper.updateUser(user, request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public boolean deleteUser(String userId) {
         try {
             userRepository.deleteById(userId);
