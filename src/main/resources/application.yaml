@@ -18,3 +18,5 @@ spring:
 
 jwt:
   signing-key: "bH0IkTZmDe64duaEqMr8jjDhg8naOaBuszFAdowreJE="
+  valid-Duration: 1  # 1 hour
+  refresh-Token-Duration: 24  # 24 hours
